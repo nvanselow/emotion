@@ -19,6 +19,22 @@ describe('toHaveStyleRule', () => {
     width: 100%;
   `
 
+  const nestedClassesStyle = emotion.css`
+    color: red;
+
+    &.nested {
+      background-color: blue;
+    }
+  `
+
+  const nestedClassesWithDuplicateProperties = emotion.css`
+    color: red;
+
+    &.nested {
+      color: blue;
+    }
+  `
+
   const enzymeMethods = ['shallow', 'mount', 'render']
 
   it('matches styles on the top-most node passed in', () => {
@@ -107,6 +123,38 @@ describe('toHaveStyleRule', () => {
   it('supports regex values', () => {
     const tree = renderer.create(<div className={divStyle} />).toJSON()
     expect(tree).toHaveStyleRule('color', /red/)
+  })
+
+  it('includes all styles when using nested classes', () => {
+    const tree = renderer
+      .create(<div className={`${nestedClassesStyle} nested`} />)
+      .toJSON()
+
+    expect(tree).toHaveStyleRule('color', 'red')
+    expect(tree).toHaveStyleRule('background-color', 'blue')
+    expect(tree).not.toHaveStyleRule('width', '100%')
+  })
+
+  it('does not include styles from nested classes when the nested class is not present', () => {
+    const tree = renderer
+      .create(<div className={nestedClassesStyle} />)
+      .toJSON()
+
+    expect(tree).toHaveStyleRule('color', 'red')
+    expect(tree).not.toHaveStyleRule('background-color', 'blue')
+    expect(tree).not.toHaveStyleRule('width', '100%')
+  })
+
+  it('includes last style when using nested classes with same css properties', () => {
+    const tree = renderer
+      .create(
+        <div className={`${nestedClassesWithDuplicateProperties} nested`} />
+      )
+      .toJSON()
+
+    expect(tree).not.toHaveStyleRule('color', 'red')
+    expect(tree).toHaveStyleRule('color', 'blue')
+    expect(tree).not.toHaveStyleRule('width', '100%')
   })
 
   it.skip('returns a message explaining the failure', () => {
