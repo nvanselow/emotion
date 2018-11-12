@@ -41,7 +41,7 @@ function toHaveStyleRule(received: *, property: *, value: *) {
   const styles = css.parse(cssString)
 
   const declaration = styles.stylesheet.rules
-    .reduce((decs, rule) => Object.assign([], decs, rule.declarations), [])
+    .reduce((decs, rule) => decs.concat(rule.declarations), [])
     .filter(dec => dec.type === 'declaration' && dec.property === property)
     .pop()
 

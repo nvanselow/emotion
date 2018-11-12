@@ -19,6 +19,14 @@ describe('toHaveStyleRule', () => {
     width: 100%;
   `
 
+  const nestedClassesStyle = emotion.css`
+    color: red;
+
+    &.nested {
+      background-color: blue;
+    }
+  `
+
   const enzymeMethods = ['shallow', 'mount', 'render']
 
   it('matches styles on the top-most node passed in', () => {
@@ -107,6 +115,16 @@ describe('toHaveStyleRule', () => {
   it('supports regex values', () => {
     const tree = renderer.create(<div className={divStyle} />).toJSON()
     expect(tree).toHaveStyleRule('color', /red/)
+  })
+
+  it('includes all styles when using nested classes', () => {
+    const tree = renderer
+      .create(<div className={`${nestedClassesStyle} visible`} />)
+      .toJSON()
+
+    expect(tree).toHaveStyleRule('color', 'red')
+    expect(tree).toHaveStyleRule('background-color', 'blue')
+    expect(tree).not.toHaveStyleRule('width', '100%')
   })
 
   it.skip('returns a message explaining the failure', () => {
